@@ -1,0 +1,217 @@
+---------------------------------- DOCKER ARCHITECTURE --------------------------------------------------------------------
+ARCHITECTURE FLOW (Simplified): -
+1. You run a command → docker run nginx.
+2. Docker Client sends this request to the Docker Daemon.
+3. Daemon checks if the image exists locally; if not, it pulls from a registry.
+4. Daemon creates a container from the image and starts it.
+5. You can then interact with the container through the client.
+
+1. Docker Client :-
+	What it is: A command-line tool (docker CLI) or API that you use to interact with Docker.	
+	Role: Sends commands (docker run, docker build, etc.) to the Docker daemon via REST API.
+	Example: When you type docker ps, the client asks the daemon for the list of running containers
+2. Docker Daemon (dockerd) :-
+	What it is: The background service that does all the heavy lifting.
+	Role: Builds images, Runs containers, Manages networks & volumes.
+	Listens for API requests from the Docker client or other programs.
+3. Docker Objects :-
+	These are the building blocks Docker works with:
+	i.Images – Read-only templates for creating containers.
+	ii.Containers – Running instances of images.
+	iii.Networks – Connect containers.
+	iv.Volumes – Persist data beyond container lifecycles.
+
+4. Docker Registries :-
+	What it is: Repositories that store Docker images.
+	Example: Docker Hub (public), AWS ECR, GCP Artifact Registry.
+	Role: Pull images when running containers and push new images when you build them.
+
+
+---------------------------------- DOCKER TERMS --------------------------------------------------------------------
+
+DOCKER FILE : - 1.Contain the instructions to build an image .
+		2.On build the Docker file we will get an image.
+
+DOCKER IMAGE: - 
+	1. A Docker image is a lightweight, standalone, and executable package that includes everything needed to run a piece of software, 	including the code, runtime, libraries, and system tools.
+	2. Contain the source code of the application.
+	3. We can also pull the build in images therefore their no always need of the docker file to build an image.
+
+DOCKER CONTAINER :- On running image create the container.
+
+---------------------------------- DOCKER FILE  CONCEPT --------------------------------------------------------------------
+# Pull a base image which gives you all required tools and library.
+FROM python:3.7-slim
+
+# Create a folder where the app code will be stored
+WORKDIR /app
+
+# Copy the source code from your HOST machine to container.  <COPY source destination>
+COPY requirements.txt .
+
+# RUN command will run the same command to your container.
+RUN mkdir -p /app/logs
+
+# CMD is also used to run the command in the container 
+CMD["java","main"]	-> After building the image this command inject in the container to run.
+
+# Differance b/w the RUN and the CMD -> Run will consider in the build layer of the image but CMD actually run the container with the main running command (eg - RUN mkdir is used to create a directory in the container space ).
+
+
+#NOTE :- 1.CMD is a command that can be overwrite at run time but the entrypoint can not be overwrite at run time.
+	2. CMD Provides default arguments or a default command to run if no command is given at runtime.
+
+
+---------------------------------- DOCKER COMMAND  --------------------------------------------------------------------
+FLAGS :- 1. -d	-> detached mode (run in background not stuck the screen).
+	 2. -p	-> publish( to publish the ports). 
+	 3. -i	-> interactive mode.
+	 4. -t 	-> Gives you a terminal interface.
+
+1. sudo systemctl status docker 		-> To check docker service is running or not
+2. docker 					-> Use to see the all command that we can apply in the docker
+3. whoami 					-> To check the use
+4. sudo usermod -aG docker $USER 		-> To add the user in the group of docker
+5. newgrp docker 				-> after add in the group this command use to refresh
+6. docker pull <image-name>			-> To pull the built in images
+7. docker run <image-name>(or repository name)	-> To run the image ( without pull the image we can run this command, this will first pull 	   						   automatic then run).
+X. docker run -d -p 80:80 <image-name>  	-> where port 80:80 is the mapping of the port from HOST machine to the container 								   (HOST_PORT:CONTAINER_PORT)
+8. docker run -e MYSQL_ROOT_PASSWORD=ROOT MySQL -> command used to provide the environment variables.
+9. docker run -d -e MYSQL_ROOT_PASSWORD=ROOT MySQL ->Now the container will run in the detached mode means our screen will not stuck.
+10. docker build -t <name of image>  .		-> used to run the docker file and make the image. where -t flag is used to define the name, 							   where  . define the docker file directory (. means in the current directory).
+11. docker logs <container_id>			-> Used to see the logs of the running container.
+12. docker attach <container_id>		-> (For logs) This command will attach the container CLI to the HOST CLI so that we will be able 						   to see the runtime logs.
+13. docker exec -it <container_id> bash 	-> This will takes you inside the container where you can interact with the running container 							   shell.
+14. docker -itd <image_name>			-> In this -itd help to run the container other wise it suddenly get stop
+15. docker restart <container_id> 		-> used to restart the container (Refresh).
+
+docker ps
+docker ps -a
+docker stop <container-id>
+docker start <container_id>
+docker rm <container-id>
+docker images
+---------------------------------- DOCKER ALL BASIC COMMAND ARE DONE --------------------------------------------------------------------
+
+
+---------------------------------- DOCKER ADVANCE COMMAND (NETWORK, COMPOSE ... )---------------------------------------------------------
+A1. #****************************** DOCKER NETWORK ***************************************************************************************
+DOCKER NETWORK : - Their are 7 types of docker network/driver (called docker driver).
+	1. HOST.
+	2. BRIDGE (DEFAULT).
+	3. USER DEFINE BRIDGE (CUSTOM).
+	4. NONE.
+	5. MACVLAN (DOCKER SWARM)
+	6. IPVLAN
+	7. OVERLAY
+
+COMMANDS :-
+1. docker network ls 						-> used to list all the networks in the docker available.
+2. docker network create <network_name> -d <driver_name>	-> used to create a network.
+3.docker run -d --name <container_name> --network <network_name> -e <env variables> <image_name>	
+	-> command used to run a container with in a particular network ( To connect more than one container in the same network we choose 	'BRIDGE' driver). we can run the all container in the same network to which we want to connect.
+	 (eg:- if we want to run a application that use the mysql DB then firstly we have to run the mysql in the network then the application 	because then in the enviornment variable of the applicationwe can do like - MYSQL_HOST=<container_name> that is running in the same 	network in which you are going to run the application).
+4. docker network inspect <network_name> 	-> This will list the all containers that are in that network.
+
+
+A2. #****************************** DOCKER VOLUME ***************************************************************************************
+DOCKER VOLUME : - A Docker volume is used to persist and share data generated or used by containers, so the data isn’t lost when a container 	stops or is removed.
+	In this we store the data in the host machine instead with in the container.
+
+COMMANDS :-
+1. docker volume ls					-> used to list the all volumes.
+2. docker volume create <volume_name>			-> this will create a volume.
+3. docker inspect <volume_name> 			-> we can see that where the our volume is mounted
+4. docker run -d --name <container_name> --network <network_name> -v <volume_name>:<path_to_container_data> -e <env variables> <image_name>	
+	-> Now the our container store the data in the Host volume. path = /val/lib/MySQL   by default the MySQL data store in this path but now 	   we have done mapping to the volume name .
+5. docker run -d --name <container_name> --network <network_name> -v <volume_path>:<path_to_container_data> -e <env variables> <image_name>
+	-> Instead of using named volume we can use any path to store the volume.
+
+
+A3. #****************************** DOCKER COMPOSE ***************************************************************************************	
+DOCKER COMPOSE :- Docker Compose is used to define and run multi-container Docker applications easily, using a single configuration file (docker-compose.yml). (yet another markup language)
+
+COMMANDS : - 
+1. sudo apt-get docker-compose-v2 	-> To install the docker compose.
+2. docker compose up
+
+DOCKER COMPOSE STRUCTRE :- 
+	1. define the version.
+	2. services that you want to use ( define number of container wants to use)
+		1.container name.
+		2.image or build.
+		3.port.
+		4.enviornment.
+		5.volumes.
+		6.networks.
+		7.depends_on.	-> if we want that first a particular container build  because we are using that in the other container and  in 				   the same network.
+	3. volumes that you have used for the services.
+	4. Networks that you have use for the services.
+
+    ------------------------------------------------------------------------------------------------------------------------------------
+	version: '3.9'  		# Version of the Compose file format (different versions support different features)
+	services:			# All the services (containers) your application needs
+	    web:			    # ---- First service: Web application ----
+		container_name: <container_name>
+		image: nginx:latest		# Image to use (from Docker Hub or built locally)
+	    	 Or
+		build:				#instead of image, you can build from a Dockerfile
+	            context: ./app
+		dockerfile: Dockerfile
+		Ports:				# Ports mapping: "HOST:CONTAINER"
+	            - "8080:80"
+		environment:			# Environment variables for the container
+		    - NGINX_HOST=localhost
+	    	    - NGINX_PORT=80
+		volumes:			# Mount volumes: "local_path:container_path"
+		      - DESTINATION:SOURCE
+		networks:			# Networks this service will connect to
+		      - app-network
+		depends_on:
+		      - MySQL			# because we use the both in the same network to communicate for that MySQL must build first. 							then also their may be issue because after the build it accept also then issue comes . to solve 						the acceptance that the first MySQL get accepted. we use the healthcheck.
+		healthchecks:
+		      - test
+		restart: unless-stopped		# Restart policy (always, unless-stopped, on-failure, no)
+
+	   db:				  # ---- Second service: Database ----
+	       	image: mysql:8
+		ports:
+		   - "3306:3306"
+		environment:
+	           - MYSQL_ROOT_PASSWORD=example
+	           - MYSQL_DATABASE=mydb
+		volumes:
+	           - db-data:/var/lib/mysql
+		networks:
+		   - app-network
+		restart: unless-stopped
+
+	
+	volumes:	# ---- Volumes Section ---- # Named volumes persist data between container restarts
+	  db-data:   		# Just declaring the name; config is optional
+
+	networks:	# ---- Networks Section ---- # Define custom networks so containers can talk by name
+	
+	app-network:
+	    driver: bridge
+
+    ------------------------------------------------------------------------------------------------------------------------------------
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
