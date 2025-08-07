@@ -69,28 +69,34 @@ FLAGS :- 1. -d	-> detached mode (run in background not stuck the screen).
 	 4. -t 	-> Gives you a terminal interface.
 
 1. sudo systemctl status docker 		-> To check docker service is running or not
-2. docker 					-> Use to see the all command that we can apply in the docker
-3. whoami 					-> To check the use
+2. docker 								-> Use to see the all command that we can apply in the docker
+3. whoami 								-> To check the use
 4. sudo usermod -aG docker $USER 		-> To add the user in the group of docker
-5. newgrp docker 				-> after add in the group this command use to refresh
-6. docker pull <image-name>			-> To pull the built in images
-7. docker run <image-name>(or repository name)	-> To run the image ( without pull the image we can run this command, this will first pull 	   						   automatic then run).
-X. docker run -d -p 80:80 <image-name>  	-> where port 80:80 is the mapping of the port from HOST machine to the container 								   (HOST_PORT:CONTAINER_PORT)
-8. docker run -e MYSQL_ROOT_PASSWORD=ROOT MySQL -> command used to provide the environment variables.
-9. docker run -d -e MYSQL_ROOT_PASSWORD=ROOT MySQL ->Now the container will run in the detached mode means our screen will not stuck.
-10. docker build -t <name of image>  .		-> used to run the docker file and make the image. where -t flag is used to define the name, 							   where  . define the docker file directory (. means in the current directory).
-11. docker logs <container_id>			-> Used to see the logs of the running container.
-12. docker attach <container_id>		-> (For logs) This command will attach the container CLI to the HOST CLI so that we will be able 						   to see the runtime logs.
-13. docker exec -it <container_id> bash 	-> This will takes you inside the container where you can interact with the running container 							   shell.
-14. docker -itd <image_name>			-> In this -itd help to run the container other wise it suddenly get stop
-15. docker restart <container_id> 		-> used to restart the container (Refresh).
+5. newgrp docker 						-> after add in the group this command use to refresh
+6. docker pull <image-name>				-> To pull the built in images
+X. docker push <image_name> 			-> Used to push the image on the registry (Public or Private(AWS-ECR).
+7. docker run <image-name>(or repository name)			-> To run the image ( without pull the image we can run this command, this will first pull 	   						   automatic then run).
+X. docker run -d -p 80:80 <image-name>  				-> where port 80:80 is the mapping of the port from HOST machine to the container 								   (HOST_PORT:CONTAINER_PORT)
+8. docker run -e MYSQL_ROOT_PASSWORD=ROOT MySQL			-> command used to provide the environment variables.
+9. docker run -d -e MYSQL_ROOT_PASSWORD=ROOT MySQL		->Now the container will run in the detached mode means our screen will not stuck.
+10. docker build -t <name of image>  .					-> used to run the docker file and make the image. where -t flag is used to define the name, 							   where  . define the docker file directory (. means in the current directory).
+11. docker logs <container_id>							-> Used to see the logs of the running container.
+12. docker attach <container_id>						-> (For logs) This command will attach the container CLI to the HOST CLI so that we will be able 						   to see the runtime logs.
+13. docker exec -it <container_id> bash 				-> This will takes you inside the container where you can interact with the running container 							   shell.
+14. docker -itd <image_name>							-> In this -itd help to run the container other wise it suddenly get stop
+15. docker restart <container_id> 						-> used to restart the container (Refresh).
 
-docker ps
-docker ps -a
-docker stop <container-id>
-docker start <container_id>
-docker rm <container-id>
-docker images
+docker ps							-> List all the running containers.
+docker ps -a						-> List all the running/Non running containers.
+docker stop <container-id>			-> Stop a particular container.
+docker start <container_id>			-> Start a particular container.
+docker rm <container-id>			-> Remove a particular image.
+docker images						-> List all the images.
+docker rmi <image_id>				-> Use to remove a particular image.
+docker images -aq					-> return all images id.
+docker rmi -f $(docker images -aq)	-> Remove all the available images forcefully.
+
+
 ---------------------------------- DOCKER ALL BASIC COMMAND ARE DONE --------------------------------------------------------------------
 
 
@@ -106,12 +112,11 @@ DOCKER NETWORK : - Their are 7 types of docker network/driver (called docker dri
 	7. OVERLAY
 
 COMMANDS :-
-1. docker network ls 						-> used to list all the networks in the docker available.
+1. docker network ls 										-> used to list all the networks in the docker available.
 2. docker network create <network_name> -d <driver_name>	-> used to create a network.
-3.docker run -d --name <container_name> --network <network_name> -e <env variables> <image_name>	
-	-> command used to run a container with in a particular network ( To connect more than one container in the same network we choose 	'BRIDGE' driver). we can run the all container in the same network to which we want to connect.
+3.docker run -d --name <container_name> --network <network_name> -e <env variables> <image_name>		-> command used to run a container with in a particular network ( To connect more than one container in the same network we choose 	'BRIDGE' driver). we can run the all container in the same network to which we want to connect.
 	 (eg:- if we want to run a application that use the mysql DB then firstly we have to run the mysql in the network then the application 	because then in the enviornment variable of the applicationwe can do like - MYSQL_HOST=<container_name> that is running in the same 	network in which you are going to run the application).
-4. docker network inspect <network_name> 	-> This will list the all containers that are in that network.
+4. docker network inspect <network_name> 					-> This will list the all containers that are in that network.
 
 
 A2. #****************************** DOCKER VOLUME ***************************************************************************************
@@ -119,21 +124,25 @@ DOCKER VOLUME : - A Docker volume is used to persist and share data generated or
 	In this we store the data in the host machine instead with in the container.
 
 COMMANDS :-
-1. docker volume ls					-> used to list the all volumes.
+1. docker volume ls								-> used to list the all volumes.
 2. docker volume create <volume_name>			-> this will create a volume.
-3. docker inspect <volume_name> 			-> we can see that where the our volume is mounted
+3. docker inspect <volume_name> 				-> we can see that where the our volume is mounted
 4. docker run -d --name <container_name> --network <network_name> -v <volume_name>:<path_to_container_data> -e <env variables> <image_name>	
-	-> Now the our container store the data in the Host volume. path = /val/lib/MySQL   by default the MySQL data store in this path but now 	   we have done mapping to the volume name .
+												-> Now the our container store the data in the Host volume. path = /val/lib/MySQL   by default the MySQL data store in this path but now we have done mapping to the volume name .
 5. docker run -d --name <container_name> --network <network_name> -v <volume_path>:<path_to_container_data> -e <env variables> <image_name>
-	-> Instead of using named volume we can use any path to store the volume.
+												-> Instead of using named volume we can use any path to store the volume.
 
 
 A3. #****************************** DOCKER COMPOSE ***************************************************************************************	
 DOCKER COMPOSE :- Docker Compose is used to define and run multi-container Docker applications easily, using a single configuration file (docker-compose.yml). (yet another markup language)
 
 COMMANDS : - 
-1. sudo apt-get docker-compose-v2 	-> To install the docker compose.
-2. docker compose up
+1. sudo apt-get docker-compose-v2 		-> To install the docker compose.
+2. docker compose up					-> Use to run the docker-compose file -> 
+3. docker compose up -d					-> In detached mode
+4. docker compose up -d	--build			-> Now this will forcefully rebuild the images instead of just using the old images.
+5. docker compose dowm					-> Stops and removes only the containers, networks, volumes, and images created by the specific docker (compose.yml) project.
+
 
 DOCKER COMPOSE STRUCTRE :- 
 	1. define the version.
@@ -157,7 +166,7 @@ DOCKER COMPOSE STRUCTRE :-
 	    	 Or
 		build:				#instead of image, you can build from a Dockerfile
 	            context: ./app
-		dockerfile: Dockerfile
+		dockerfile: Dockerfile		# Here we have to define the name of the dockerfile (Optional default->Dockerfile), if we use 							  multiple docker file in the same directory then needed to provide the name.
 		Ports:				# Ports mapping: "HOST:CONTAINER"
 	            - "8080:80"
 		environment:			# Environment variables for the container
@@ -169,8 +178,8 @@ DOCKER COMPOSE STRUCTRE :-
 		      - app-network
 		depends_on:
 		      - MySQL			# because we use the both in the same network to communicate for that MySQL must build first. 							then also their may be issue because after the build it accept also then issue comes . to solve 						the acceptance that the first MySQL get accepted. we use the healthcheck.
-		healthchecks:
-		      - test
+		healthcheck:
+		      - test			# Explain properly below.
 		restart: unless-stopped		# Restart policy (always, unless-stopped, on-failure, no)
 
 	   db:				  # ---- Second service: Database ----
@@ -197,7 +206,29 @@ DOCKER COMPOSE STRUCTRE :-
 
     ------------------------------------------------------------------------------------------------------------------------------------
 	
+	###################  HEALTH CHECK CONCEPT #################################################################################
+	By adding the 'depend_on' in the 'web' service , the container 'web' build after the build of 'db' service but then also the db is still 
+	not connected (Not Ready for connection) that cause the issue for that we will use the Health checks.
+		
+	---------------------- for 'db' service -------------------------------------------
+	restart: always		# if the health check not pass then restart
+	healthcheck:
+	    test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-uroot', '-proot']
+	    interval: 10s
+	    timeout:5s
+	    retries:5
+	    start_period: 60s
+	---------------------- for 'web' service -------------------------------------------	    
+	restart: always		# if the health check not pass then restart
+	healthcheck:
+	    test: ['CMD', 'curl', '-f', 'http://localhost/5000/health || exit1']
+	    interval: 10s
+	    timeout:5s
+	    retries:5
+	    start_period: 60s	
 
+
+A4. #****************************** DOCKER REGISTRY ***************************************************************************************	
 
 
 
